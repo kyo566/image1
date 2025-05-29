@@ -4,8 +4,6 @@ scikit-image>=0.19.3
 matplotlib
 pillow
 requests
-
-torch
-torchvision
-git+https://github.com/ultralytics/yolov5.git
-
+torch==2.0.1
+torchvision==0.15.2
+ultralytics==8.0.20
