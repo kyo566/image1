@@ -12,8 +12,8 @@ response = requests.get(url)
 img = Image.open(BytesIO(response.content)).convert("RGB")
 
 # กำหนดขนาดกรอบแบบคงที่
-FRAME_WIDTH = 900
-FRAME_HEIGHT = 600
+FRAME_WIDTH = 1500
+FRAME_HEIGHT = 1200
 MARGIN = 40  # สำหรับไม้บรรทัด
 
 # ปรับขนาดรูปภาพตาม slider (แต่ไม่กระทบกรอบ)
