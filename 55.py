@@ -16,33 +16,27 @@ image_urls = [
 # กำหนดค่าเริ่มต้นใน session state
 if "selected_index" not in st.session_state:
     st.session_state.selected_index = None
-
 if "image_width" not in st.session_state:
-    st.session_state.image_width = 300
+    st.session_state.image_width = 400
 
-# แสดงภาพเรียงใน 3 คอลัมน์
-cols = st.columns(3)
+# ถ้ายังไม่เลือกภาพ → แสดงภาพทั้งหมด
+if st.session_state.selected_index is None:
+    cols = st.columns(3)
+    for idx, url in enumerate(image_urls):
+        with cols[idx]:
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                image = Image.open(BytesIO(response.content))
+                st.image(image, caption=f"ภาพที่ {idx+1}", use_container_width=True)
+                if st.button(f"เลือกภาพที่ {idx+1}", key=f"btn_{idx}"):
+                    st.session_state.selected_index = idx
+            except Exception as e:
+                st.error(f"โหลดภาพที่ {idx+1} ไม่สำเร็จ: {e}")
 
-for idx, url in enumerate(image_urls):
-    with cols[idx]:
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            content_type = response.headers.get("Content-Type", "")
-            if "image" not in content_type:
-                raise ValueError(f"URL นี้ไม่ได้ส่งคืนรูปภาพ: {content_type}")
-            image = Image.open(BytesIO(response.content))
-
-            st.image(image, caption=f"ภาพที่ {idx+1}", use_container_width=True)
-            if st.button(f"เลือกภาพที่ {idx+1}", key=f"btn_{idx}"):
-                st.session_state.selected_index = idx
-        except Exception as e:
-            st.error(f"โหลดภาพที่ {idx+1} ไม่สำเร็จ: {e}")
-
-# ถ้ามีการเลือกภาพ
-if st.session_state.selected_index is not None:
-    st.markdown("---")
-    st.subheader(f"🖼️ ปรับขนาดภาพที่ {st.session_state.selected_index + 1}")
+# ถ้าเลือกภาพแล้ว → แสดงแค่ภาพนั้น พร้อม slider ปรับขนาด
+else:
+    st.markdown("### 🖼️ ภาพที่คุณเลือก")
     selected_url = image_urls[st.session_state.selected_index]
 
     try:
@@ -50,12 +44,16 @@ if st.session_state.selected_index is not None:
         response.raise_for_status()
         image = Image.open(BytesIO(response.content))
 
-        # สไลเดอร์สำหรับปรับขนาด
-        width = st.slider("ความกว้างของภาพ (px)", min_value=100, max_value=800,
+        width = st.slider("ปรับความกว้างของภาพ (px)", min_value=100, max_value=1000,
                           value=st.session_state.image_width, step=50)
         st.session_state.image_width = width
 
         st.image(image, caption="ภาพที่เลือก", width=width)
 
+        if st.button("🔙 กลับไปเลือกรูปอื่น"):
+            st.session_state.selected_index = None
+
     except Exception as e:
         st.error(f"ไม่สามารถโหลดภาพที่เลือกได้: {e}")
+        if st.button("🔙 กลับ"):
+            st.session_state.selected_index = None
