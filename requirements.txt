@@ -1,7 +1,5 @@
 streamlit
-torch==1.13.1+cpu
-torchvision==0.14.1+cpu
-ultralytics==8.0.20
-opencv-python-headless==4.7.0.72
-Pillow
+scikit-image>=0.19.3
+matplotlib
+pillow
 requests
