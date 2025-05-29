@@ -13,11 +13,13 @@ image_urls = [
     "https://cdn.pixabay.com/photo/2019/10/14/03/26/landscape-4547734_1280.jpg"
 ]
 
-# กำหนดค่าเริ่มต้นใน session state
+# Session state สำหรับเก็บข้อมูลภาพที่เลือกและขนาด
 if "selected_index" not in st.session_state:
     st.session_state.selected_index = None
 if "image_width" not in st.session_state:
     st.session_state.image_width = 400
+if "image_height" not in st.session_state:
+    st.session_state.image_height = 300
 
 # ถ้ายังไม่เลือกภาพ → แสดงภาพทั้งหมด
 if st.session_state.selected_index is None:
@@ -34,7 +36,7 @@ if st.session_state.selected_index is None:
             except Exception as e:
                 st.error(f"โหลดภาพที่ {idx+1} ไม่สำเร็จ: {e}")
 
-# ถ้าเลือกภาพแล้ว → แสดงแค่ภาพนั้น พร้อม slider ปรับขนาด
+# ถ้าเลือกภาพแล้ว → แสดงแค่ภาพนั้น และสไลเดอร์แกน X/Y
 else:
     st.markdown("### 🖼️ ภาพที่คุณเลือก")
     selected_url = image_urls[st.session_state.selected_index]
@@ -44,11 +46,21 @@ else:
         response.raise_for_status()
         image = Image.open(BytesIO(response.content))
 
-        width = st.slider("ปรับความกว้างของภาพ (px)", min_value=100, max_value=1000,
-                          value=st.session_state.image_width, step=50)
-        st.session_state.image_width = width
+        # สไลเดอร์ปรับแกน X/Y
+        col1, col2 = st.columns(2)
+        with col1:
+            width = st.slider("ความกว้าง (แกน X)", min_value=100, max_value=1000,
+                              value=st.session_state.image_width, step=50)
+        with col2:
+            height = st.slider("ความสูง (แกน Y)", min_value=100, max_value=1000,
+                               value=st.session_state.image_height, step=50)
 
-        st.image(image, caption="ภาพที่เลือก", width=width)
+        st.session_state.image_width = width
+        st.session_state.image_height = height
+
+        # ปรับขนาดภาพตามแกน X/Y
+        resized_image = image.resize((width, height))
+        st.image(resized_image, caption="ภาพที่ปรับขนาดแล้ว")
 
         if st.button("🔙 กลับไปเลือกรูปอื่น"):
             st.session_state.selected_index = None
