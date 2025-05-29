@@ -7,18 +7,15 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="แสดงภาพนกแบบเลือกภาพ", layout="wide")
 st.title("🕊️ แสดงภาพนกจาก Pixabay แบบเลือกภาพ")
 
+# URL และชื่อภาพ
 image_urls = [
     "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg",
     "https://cdn.pixabay.com/photo/2018/09/24/08/52/mountains-3699372_1280.jpg",
     "https://cdn.pixabay.com/photo/2019/10/14/03/26/landscape-4547734_1280.jpg"
 ]
+image_names = ["นก 🕊️", "ภูเขา 🏔️", "ทิวทัศน์ 🌄"]
 
-image_names = [
-    "นก 🕊️",
-    "ภูเขา 🏔️",
-    "ทิวทัศน์ 🌄"
-]
-
+# ฟังก์ชันโหลดภาพ
 def load_image(url):
     try:
         response = requests.get(url)
@@ -28,11 +25,13 @@ def load_image(url):
         st.error(f"โหลดภาพไม่สำเร็จ: {e}")
         return None
 
+# ตัวแปรสถานะ
 if "page" not in st.session_state:
     st.session_state.page = "gallery"
 if "selected_index" not in st.session_state:
     st.session_state.selected_index = None
 
+# แสดงหน้าแกลเลอรี่
 def show_gallery():
     st.header("เลือกภาพจากแกลเลอรี่")
     cols = st.columns(3)
@@ -45,6 +44,7 @@ def show_gallery():
                     st.session_state.selected_index = idx
                     st.session_state.page = "detail"
 
+# แสดงหน้ารายละเอียดภาพ
 def show_detail():
     st.header(f"ภาพ: {image_names[st.session_state.selected_index]}")
     image = load_image(image_urls[st.session_state.selected_index])
@@ -52,20 +52,21 @@ def show_detail():
         st.error("ไม่สามารถโหลดภาพได้")
         return
 
-    width = st.slider("ความกว้างของภาพ (px)", 100, 1000, image.width, key="width")
-    height = st.slider("ความสูงของภาพ (px)", 100, 800, image.height, key="height")
+    # ปรับขนาดภาพ
+    st.markdown("### ปรับขนาดภาพ")
+    width = st.slider("ความกว้าง (px)", 100, 800, image.width, key="width")
+    height = st.slider("ความสูง (px)", 100, 600, image.height, key="height")
     image_resized = image.resize((width, height))
 
     if st.button("⬅️ กลับไปหน้าแกลเลอรี่"):
         st.session_state.page = "gallery"
         return
 
-    st.subheader("ภาพพร้อมไม้บรรทัด (matplotlib)")
+    st.subheader("🧭 ภาพพร้อมแกน X / Y")
 
-    # ปรับสัดส่วนขนาดรูปที่แสดงผล
+    # สร้าง matplotlib พร้อมแกน
     dpi = 100
-    figsize = (width / dpi, height / dpi)  # แปลง px เป็น inches
-
+    figsize = (width / dpi, height / dpi)
     fig, ax = plt.subplots(figsize=figsize)
     ax.imshow(image_resized)
     ax.set_title("Original Image", fontsize=10)
@@ -79,10 +80,12 @@ def show_detail():
     ax.set_yticks(range(0, height + 1, step_y))
     ax.tick_params(axis='both', labelsize=7)
 
-    # ทำให้แสดงแนวนอน/แนวตั้งได้ถ้าภาพใหญ่
-    with st.container():
+    # จัดภาพไว้ตรงกลาง
+    left, center, right = st.columns([1, 3, 1])
+    with center:
         st.pyplot(fig)
 
+# รันแอป
 if st.session_state.page == "gallery":
     show_gallery()
 elif st.session_state.page == "detail":
