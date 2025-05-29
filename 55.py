@@ -63,37 +63,35 @@ st.markdown(
         line-height: {MARGIN}px;
         white-space: nowrap;
     }}
-    .ruler-left {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    bottom: 0;
-    width: 40px;
-    background: #eee;
-    border-right: 1px solid #bbb;
-    font-size: 11px;
-    font-family: monospace;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 0;
-    overflow: hidden;
-    user-select: none;
-}
-
-.ruler-left div {
-    height: 50px;
-    border-bottom: 1px solid #ccc;
-    width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(-90deg);
-    transform-origin: center;
-    white-space: nowrap;
-}
-
+    .ruler-left {{
+        position: absolute;
+        top: {MARGIN}px;
+        left: 0;
+        bottom: 0;
+        width: {MARGIN}px;
+        background: #eee;
+        border-right: 1px solid #bbb;
+        font-size: 11px;
+        font-family: monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 0;
+        overflow: hidden;
+        user-select: none;
+    }}
+    .ruler-left div {{
+        height: 50px;
+        border-bottom: 1px solid #ccc;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: rotate(-90deg);
+        transform-origin: center;
+        white-space: nowrap;
+    }}
     .scroll-area {{
         position: absolute;
         top: {MARGIN}px;
