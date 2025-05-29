@@ -2,8 +2,6 @@
 streamlit
 scikit-image>=0.19.3
 matplotlib
-pillow
+ultralytics
+Pillow
 requests
-torch==2.0.1
-torchvision==0.15.2
-ultralytics==8.0.20
