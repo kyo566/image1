@@ -1,10 +1,10 @@
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 
-st.set_page_config(page_title="แสดงภาพนกจาก Pixabay", layout="wide")
-st.title("🕊️ แสดงภาพนกจาก Pixabay")
+st.set_page_config(page_title="แสดงภาพนกพร้อมไม้บรรทัด", layout="wide")
+st.title("🖼️ แสดงภาพพร้อมปรับขนาดและไม้บรรทัด")
 
 # รายการ URL ของภาพ
 image_urls = [
@@ -13,7 +13,7 @@ image_urls = [
     "https://cdn.pixabay.com/photo/2019/10/14/03/26/landscape-4547734_1280.jpg"
 ]
 
-# Session state สำหรับเก็บข้อมูลภาพที่เลือกและขนาด
+# ค่าเริ่มต้นใน session_state
 if "selected_index" not in st.session_state:
     st.session_state.selected_index = None
 if "image_width" not in st.session_state:
@@ -21,7 +21,7 @@ if "image_width" not in st.session_state:
 if "image_height" not in st.session_state:
     st.session_state.image_height = 300
 
-# ถ้ายังไม่เลือกภาพ → แสดงภาพทั้งหมด
+# แสดงภาพทั้งหมดถ้ายังไม่เลือก
 if st.session_state.selected_index is None:
     cols = st.columns(3)
     for idx, url in enumerate(image_urls):
@@ -36,7 +36,7 @@ if st.session_state.selected_index is None:
             except Exception as e:
                 st.error(f"โหลดภาพที่ {idx+1} ไม่สำเร็จ: {e}")
 
-# ถ้าเลือกภาพแล้ว → แสดงแค่ภาพนั้น และสไลเดอร์แกน X/Y
+# แสดงภาพเดี่ยวเมื่อเลือกแล้ว
 else:
     st.markdown("### 🖼️ ภาพที่คุณเลือก")
     selected_url = image_urls[st.session_state.selected_index]
@@ -46,7 +46,7 @@ else:
         response.raise_for_status()
         image = Image.open(BytesIO(response.content))
 
-        # สไลเดอร์ปรับแกน X/Y
+        # สไลเดอร์แกน X/Y
         col1, col2 = st.columns(2)
         with col1:
             width = st.slider("ความกว้าง (แกน X)", min_value=100, max_value=1000,
@@ -58,9 +58,25 @@ else:
         st.session_state.image_width = width
         st.session_state.image_height = height
 
-        # ปรับขนาดภาพตามแกน X/Y
-        resized_image = image.resize((width, height))
-        st.image(resized_image, caption="ภาพที่ปรับขนาดแล้ว")
+        # ปรับขนาดภาพ
+        resized = image.resize((width, height))
+
+        # วาดไม้บรรทัดบนภาพ
+        ruler_img = resized.copy()
+        draw = ImageDraw.Draw(ruler_img)
+
+        # เส้นแนวแกน X (บน)
+        for x in range(0, width, 50):
+            draw.line([(x, 0), (x, 15)], fill="red", width=1)
+            draw.text((x + 2, 16), str(x), fill="red")
+
+        # เส้นแนวแกน Y (ซ้าย)
+        for y in range(0, height, 50):
+            draw.line([(0, y), (15, y)], fill="blue", width=1)
+            draw.text((18, y), str(y), fill="blue")
+
+        # แสดงภาพที่มีไม้บรรทัด
+        st.image(ruler_img, caption="ภาพที่ปรับขนาดแล้ว พร้อมไม้บรรทัด")
 
         if st.button("🔙 กลับไปเลือกรูปอื่น"):
             st.session_state.selected_index = None
