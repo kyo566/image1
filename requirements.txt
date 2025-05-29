@@ -5,4 +5,4 @@ pillow
 requests
 torch
 ultralytics
-opencv-python-headlews
+opencv-python-headless
