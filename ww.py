@@ -4,7 +4,6 @@ import requests
 from io import BytesIO
 from ultralytics import YOLO
 
-# โหลดโมเดล YOLOv5s
 @st.cache_resource
 def load_model():
     return YOLO("yolov5s.pt")
@@ -37,12 +36,10 @@ if image:
     st.write("🔎 กำลังตรวจจับวัตถุ...")
     results = model.predict(image)
 
-    # แสดงผล
     rendered = results[0].plot()
     st.image(rendered, caption="วัตถุที่ตรวจพบ", use_column_width=True)
 
-    # แสดงชื่อวัตถุทั้งหมด
-    st.write("📋 รายการวัตถุที่พบ:")
     names = model.names
     labels = [names[int(cls)] for cls in results[0].boxes.cls]
+    st.write("📋 รายการวัตถุที่พบ:")
     st.write(labels)
