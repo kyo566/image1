@@ -9,8 +9,8 @@ st.title("🕊️ แสดงภาพนกจาก Pixabay")
 # รายการ URL ของภาพ
 image_urls = [
     "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg",
-    "https://cdn.pixabay.com/photo/2016/11/22/19/45/kingfisher-1851462_1280.jpg",
-    "https://cdn.pixabay.com/photo/2017/08/30/01/11/hummingbird-2695569_1280.jpg"
+    "https://cdn.pixabay.com/photo/2018/09/24/08/52/mountains-3699372_1280.jpg",
+    "https://cdn.pixabay.com/photo/2019/10/14/03/26/landscape-4547734_1280.jpg"
 ]
 
 # แสดงภาพเรียงใน 3 คอลัมน์
