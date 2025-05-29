@@ -1,29 +1,29 @@
 import streamlit as st
-import requests
 from PIL import Image
+import requests
 from io import BytesIO
-import torch
+from ultralytics import YOLO
 
-# โหลดโมเดล YOLOv5 (ใช้ yolov5s ที่เบาที่สุด)
+# โหลดโมเดล YOLOv5s
 @st.cache_resource
 def load_model():
-    return torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+    return YOLO("yolov5s.pt")
 
 model = load_model()
 
-st.title("🔍 ตรวจจับวัตถุในภาพด้วย YOLOv5")
+st.title("🖼️ ตรวจจับวัตถุในภาพด้วย YOLOv5")
 
-option = st.radio("เลือกวิธีการใส่รูปภาพ", ("📤 อัปโหลดไฟล์", "🌐 ใส่ URL"))
+method = st.radio("เลือกรูปแบบการใส่ภาพ", ["อัปโหลดไฟล์", "ใส่ URL"])
 
 image = None
 
-if option == "📤 อัปโหลดไฟล์":
-    uploaded_file = st.file_uploader("อัปโหลดรูปภาพ", type=["jpg", "jpeg", "png"])
+if method == "อัปโหลดไฟล์":
+    uploaded_file = st.file_uploader("เลือกรูปภาพ", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         image = Image.open(uploaded_file)
 
-elif option == "🌐 ใส่ URL":
-    url = st.text_input("ใส่ URL ของภาพ")
+elif method == "ใส่ URL":
+    url = st.text_input("ป้อน URL ของภาพ")
     if url:
         try:
             response = requests.get(url)
@@ -34,13 +34,15 @@ elif option == "🌐 ใส่ URL":
 if image:
     st.image(image, caption="ภาพต้นฉบับ", use_column_width=True)
 
-    st.write("🔎 กำลังประมวลผล...")
-    results = model(image)
+    st.write("🔎 กำลังตรวจจับวัตถุ...")
+    results = model.predict(image)
 
-    # แสดงภาพพร้อมกรอบ
-    st.image(results.render()[0], caption="วัตถุที่ตรวจพบ", use_column_width=True)
+    # แสดงผล
+    rendered = results[0].plot()
+    st.image(rendered, caption="วัตถุที่ตรวจพบ", use_column_width=True)
 
-    # แสดงรายละเอียดวัตถุที่เจอ
-    df = results.pandas().xyxy[0]
-    st.write("📋 วัตถุที่ตรวจพบ:")
-    st.dataframe(df[['name', 'confidence']])
+    # แสดงชื่อวัตถุทั้งหมด
+    st.write("📋 รายการวัตถุที่พบ:")
+    names = model.names
+    labels = [names[int(cls)] for cls in results[0].boxes.cls]
+    st.write(labels)
