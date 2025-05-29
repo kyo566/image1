@@ -1,6 +1,6 @@
 
 streamlit
-scikit-image>=0.19.3
+scikit-image
 matplotlib
 ultralytics
 opencv-python
