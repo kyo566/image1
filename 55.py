@@ -4,7 +4,7 @@ import requests
 from io import BytesIO
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="แสดงภาพนกจาก Pixabay แบบเลือกภาพ", layout="wide")
+st.set_page_config(page_title="แสดงภาพนกแบบเลือกภาพ", layout="wide")
 st.title("🕊️ แสดงภาพนกจาก Pixabay แบบเลือกภาพ")
 
 image_urls = [
@@ -52,8 +52,8 @@ def show_detail():
         st.error("ไม่สามารถโหลดภาพได้")
         return
 
-    width = st.slider("ความกว้างของภาพ (px)", 100, 1500, image.width, key="width")
-    height = st.slider("ความสูงของภาพ (px)", 100, 1000, image.height, key="height")
+    width = st.slider("ความกว้างของภาพ (px)", 100, 1000, image.width, key="width")
+    height = st.slider("ความสูงของภาพ (px)", 100, 800, image.height, key="height")
     image_resized = image.resize((width, height))
 
     if st.button("⬅️ กลับไปหน้าแกลเลอรี่"):
@@ -61,19 +61,27 @@ def show_detail():
         return
 
     st.subheader("ภาพพร้อมไม้บรรทัด (matplotlib)")
-    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # ปรับสัดส่วนขนาดรูปที่แสดงผล
+    dpi = 100
+    figsize = (width / dpi, height / dpi)  # แปลง px เป็น inches
+
+    fig, ax = plt.subplots(figsize=figsize)
     ax.imshow(image_resized)
-    ax.set_title("Original Image")
-    ax.set_xlabel("X (Column)")
-    ax.set_ylabel("Y (Row)")
+    ax.set_title("Original Image", fontsize=10)
+    ax.set_xlabel("X (Column)", fontsize=8)
+    ax.set_ylabel("Y (Row)", fontsize=8)
 
     step_x = max(width // 10, 1)
     step_y = max(height // 10, 1)
-    ax.grid(True, color='gray', linestyle='--', linewidth=0.5)
+    ax.grid(True, color='gray', linestyle='--', linewidth=0.4)
     ax.set_xticks(range(0, width + 1, step_x))
     ax.set_yticks(range(0, height + 1, step_y))
+    ax.tick_params(axis='both', labelsize=7)
 
-    st.pyplot(fig)
+    # ทำให้แสดงแนวนอน/แนวตั้งได้ถ้าภาพใหญ่
+    with st.container():
+        st.pyplot(fig)
 
 if st.session_state.page == "gallery":
     show_gallery()
