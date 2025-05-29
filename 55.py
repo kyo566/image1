@@ -17,7 +17,7 @@ try:
     image = Image.open(BytesIO(response.content))
 
     # แสดงรูปภาพ
-    st.image(image, caption="นกสวยงามจาก Pixabay", use_column_width=True)
+    st.image(image, caption="นกสวยงามจาก Pixabay", use_container_width=True)
 
 except Exception as e:
     st.error(f"ไม่สามารถโหลดภาพได้: {e}")
