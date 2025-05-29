@@ -3,23 +3,49 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 
-st.set_page_config(page_title="แสดงภาพนกพร้อมไม้บรรทัด", layout="wide")
-st.title("🖼️ แสดงภาพพร้อมปรับขนาดและไม้บรรทัด")
+st.set_page_config(page_title="แสดงภาพพร้อมกรอบไม้บรรทัด", layout="wide")
+st.title("🖼️ แสดงภาพพร้อมปรับขนาดและกรอบไม้บรรทัด")
 
-# รายการ URL ของภาพ
+# รายการภาพ
 image_urls = [
     "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg",
     "https://cdn.pixabay.com/photo/2018/09/24/08/52/mountains-3699372_1280.jpg",
     "https://cdn.pixabay.com/photo/2019/10/14/03/26/landscape-4547734_1280.jpg"
 ]
 
-# ค่าเริ่มต้นใน session_state
+# Session State
 if "selected_index" not in st.session_state:
     st.session_state.selected_index = None
 if "image_width" not in st.session_state:
     st.session_state.image_width = 400
 if "image_height" not in st.session_state:
     st.session_state.image_height = 300
+
+# ฟังก์ชันวาดไม้บรรทัดแบบกรอบ
+def draw_ruler_frame(image, step=50, margin=40):
+    width, height = image.size
+    new_width = width + margin
+    new_height = height + margin
+
+    # สร้างพื้นหลังสีเทาอ่อน
+    bg = Image.new("RGB", (new_width, new_height), color="#f0f0f0")
+    bg.paste(image, (margin, margin))
+
+    draw = ImageDraw.Draw(bg)
+
+    # ไม้บรรทัดด้านบน (แกน X)
+    for x in range(0, width, step):
+        pos = x + margin
+        draw.line([(pos, margin - 15), (pos, margin)], fill="black", width=1)
+        draw.text((pos + 2, 2), str(x), fill="black")
+
+    # ไม้บรรทัดด้านซ้าย (แกน Y)
+    for y in range(0, height, step):
+        pos = y + margin
+        draw.line([(margin - 15, pos), (margin, pos)], fill="black", width=1)
+        draw.text((2, pos - 7), str(y), fill="black")
+
+    return bg
 
 # แสดงภาพทั้งหมดถ้ายังไม่เลือก
 if st.session_state.selected_index is None:
@@ -36,9 +62,9 @@ if st.session_state.selected_index is None:
             except Exception as e:
                 st.error(f"โหลดภาพที่ {idx+1} ไม่สำเร็จ: {e}")
 
-# แสดงภาพเดี่ยวเมื่อเลือกแล้ว
+# แสดงภาพเดี่ยวพร้อมกรอบไม้บรรทัด
 else:
-    st.markdown("### 🖼️ ภาพที่คุณเลือก")
+    st.markdown("### ✂️ ปรับขนาดพร้อมกรอบไม้บรรทัด")
     selected_url = image_urls[st.session_state.selected_index]
 
     try:
@@ -46,42 +72,25 @@ else:
         response.raise_for_status()
         image = Image.open(BytesIO(response.content))
 
-        # สไลเดอร์แกน X/Y
+        # สไลเดอร์ขนาด
         col1, col2 = st.columns(2)
         with col1:
-            width = st.slider("ความกว้าง (แกน X)", min_value=100, max_value=1000,
-                              value=st.session_state.image_width, step=50)
+            width = st.slider("ความกว้าง (แกน X)", 100, 1000, st.session_state.image_width, 50)
         with col2:
-            height = st.slider("ความสูง (แกน Y)", min_value=100, max_value=1000,
-                               value=st.session_state.image_height, step=50)
+            height = st.slider("ความสูง (แกน Y)", 100, 1000, st.session_state.image_height, 50)
 
         st.session_state.image_width = width
         st.session_state.image_height = height
 
-        # ปรับขนาดภาพ
         resized = image.resize((width, height))
+        final_img = draw_ruler_frame(resized, step=50, margin=40)
 
-        # วาดไม้บรรทัดบนภาพ
-        ruler_img = resized.copy()
-        draw = ImageDraw.Draw(ruler_img)
-
-        # เส้นแนวแกน X (บน)
-        for x in range(0, width, 50):
-            draw.line([(x, 0), (x, 15)], fill="red", width=1)
-            draw.text((x + 2, 16), str(x), fill="red")
-
-        # เส้นแนวแกน Y (ซ้าย)
-        for y in range(0, height, 50):
-            draw.line([(0, y), (15, y)], fill="blue", width=1)
-            draw.text((18, y), str(y), fill="blue")
-
-        # แสดงภาพที่มีไม้บรรทัด
-        st.image(ruler_img, caption="ภาพที่ปรับขนาดแล้ว พร้อมไม้บรรทัด")
+        st.image(final_img, caption="ภาพพร้อมกรอบไม้บรรทัด", use_column_width=False)
 
         if st.button("🔙 กลับไปเลือกรูปอื่น"):
             st.session_state.selected_index = None
 
     except Exception as e:
-        st.error(f"ไม่สามารถโหลดภาพที่เลือกได้: {e}")
+        st.error(f"ไม่สามารถโหลดภาพได้: {e}")
         if st.button("🔙 กลับ"):
             st.session_state.selected_index = None
