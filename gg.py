@@ -4,58 +4,50 @@ import requests
 from io import BytesIO
 from ultralytics import YOLO
 
-# โหลดโมเดล YOLOv8 Nano (เล็กสุด เร็ว)
-model = YOLO('yolov8n.pt')
+# โหลดโมเดล YOLOv5s
+model = YOLO("yolov8n.pt")
 
-def load_image_from_url(url):
-    response = requests.get(url)
-    response.raise_for_status()  # ตรวจสอบว่าดึงภาพได้หรือไม่
-    img = Image.open(BytesIO(response.content)).convert("RGB")
-    return img
+st.title("🔍 ตรวจจับวัตถุในภาพ (Object Detection)")
 
-st.title("Object Detection with YOLOv8 and Streamlit")
+# โหมดการเลือกภาพ
+mode = st.radio("เลือกวิธีการนำเข้าภาพ", ["📤 Upload", "🌐 URL"])
 
-input_method = st.radio("เลือกวิธีใส่ภาพ", ("Upload Image", "Image URL"))
+image = None
 
-if input_method == "Upload Image":
-    uploaded_file = st.file_uploader("อัปโหลดไฟล์ภาพ", type=["jpg", "jpeg", "png"])
-    if uploaded_file:
-        image = Image.open(uploaded_file).convert("RGB")
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+# โหลดภาพจาก upload
+if mode == "📤 Upload":
+    uploaded_file = st.file_uploader("อัปโหลดภาพ", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
 
-        results = model(image)
-        labels = results[0].names
-        detected = set()
-        for box in results[0].boxes:
-            cls = int(box.cls[0])
-            detected.add(labels[cls])
-
-        if detected:
-            st.markdown("**Detected objects:**")
-            for obj in detected:
-                st.write("- " + obj)
-        else:
-            st.write("ไม่พบวัตถุในภาพ")
-
-elif input_method == "Image URL":
+# โหลดภาพจาก URL
+elif mode == "🌐 URL":
     url = st.text_input("ใส่ URL ของภาพ")
     if url:
         try:
-            image = load_image_from_url(url)
-            st.image(image, caption="Image from URL", use_column_width=True)
-
-            results = model(image)
-            labels = results[0].names
-            detected = set()
-            for box in results[0].boxes:
-                cls = int(box.cls[0])
-                detected.add(labels[cls])
-
-            if detected:
-                st.markdown("**Detected objects:**")
-                for obj in detected:
-                    st.write("- " + obj)
-            else:
-                st.write("ไม่พบวัตถุในภาพ")
+            response = requests.get(url)
+            image = Image.open(BytesIO(response.content))
         except Exception as e:
-            st.error(f"โหลดภาพไม่สำเร็จ: {e}")
+            st.error(f"ไม่สามารถโหลดภาพจาก URL ได้: {e}")
+
+# แสดงภาพและวิเคราะห์
+if image:
+    st.image(image, caption="📷 ภาพต้นฉบับ", use_container_width=True)
+
+    with st.spinner("กำลังตรวจจับวัตถุ..."):
+        model = YOLO("yolov8n.pt")
+        results = model.predict(image)
+
+        result = results[0]
+        names = model.names
+        detected = set()
+        for box in result.boxes:
+            cls_id = int(box.cls[0])
+            detected.add(names[cls_id])
+
+        st.success("✅ ตรวจจับวัตถุสำเร็จแล้ว")
+        st.write("### 🔍 พบวัตถุดังนี้:")
+        for obj in detected:
+            st.markdown(f"- {obj}")
+
+        st.image(result.plot(), caption="📦 ภาพพร้อมกล่อง", use_container_width=True)
