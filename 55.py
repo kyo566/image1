@@ -32,15 +32,22 @@ img_uri = f"data:image/png;base64,{img_str}"
 st.markdown(
     f"""
     <style>
+    html, body {{
+        height: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
     .ruler-container {{
         position: relative;
         width: {FRAME_WIDTH + MARGIN}px;
         height: {FRAME_HEIGHT + MARGIN}px;
         border: 1px solid #ccc;
         background: #f9f9f9;
-        margin: auto;
         user-select: none;
         overflow: hidden;
+        margin: 0;  /* ลบ margin auto */
     }}
     .ruler-top {{
         position: absolute;
