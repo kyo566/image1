@@ -4,7 +4,7 @@ import requests
 from io import BytesIO
 import base64
 
-st.title("กรอบไม้บรรทัดขนาดคงที่ ไม่ย่อ-ขยายตามรูป")
+st.title("กรอบไม้บรรทัดขนาดคงที่ ไม่ย่อ-ขยายตามรูป พร้อมรูปภาพอยู่กลางกรอบ")
 
 # โหลดภาพ
 url = "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg"
@@ -12,13 +12,13 @@ response = requests.get(url)
 img = Image.open(BytesIO(response.content)).convert("RGB")
 
 # กำหนดขนาดกรอบแบบคงที่
-FRAME_WIDTH = 1500
-FRAME_HEIGHT = 1200
+FRAME_WIDTH = 900
+FRAME_HEIGHT = 600
 MARGIN = 40  # สำหรับไม้บรรทัด
 
 # ปรับขนาดรูปภาพตาม slider (แต่ไม่กระทบกรอบ)
-img_width = st.slider("ความกว้างรูปภาพ (px)", 100, 1200, 800, 50)
-img_height = st.slider("ความสูงรูปภาพ (px)", 100, 900, 700, 50)
+img_width = st.slider("ความกว้างรูปภาพ (px)", 100, 1500, 1000, 50)
+img_height = st.slider("ความสูงรูปภาพ (px)", 100, 1000, 700, 50)
 
 resized = img.resize((img_width, img_height))
 
@@ -28,7 +28,7 @@ resized.save(buffer, format="PNG")
 img_str = base64.b64encode(buffer.getvalue()).decode()
 img_uri = f"data:image/png;base64,{img_str}"
 
-# CSS สำหรับกรอบไม้บรรทัดขนาดคงที่ (ไม่ขยายตามรูป)
+# CSS สำหรับกรอบไม้บรรทัดและ layout
 st.markdown(
     f"""
     <style>
@@ -47,7 +47,7 @@ st.markdown(
         background: #f9f9f9;
         user-select: none;
         overflow: hidden;
-        margin: 0;  /* ลบ margin auto */
+        margin: 0;
     }}
     .ruler-top {{
         position: absolute;
@@ -106,9 +106,20 @@ st.markdown(
         width: {FRAME_WIDTH}px;
         height: {FRAME_HEIGHT}px;
         overflow: auto;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
         background: repeating-conic-gradient(#f8f8f8 0% 25%, white 0% 50%) 0 0 / 20px 20px;
         border: 1px solid #ddd;
         box-sizing: content-box;
+    }}
+    .scroll-area img {{
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
     }}
     </style>
 
